@@ -1,5 +1,7 @@
 # We See
 
+"We See" by Man Bartlett, for [Person of the Crowd](http://www.barnesfoundation.org/exhibitions/upcoming/person-of-the-crowd) at The Barnes Foundation.
+
 ## Server setup
 
 First, create a VPS and ssh into it.
@@ -15,8 +17,16 @@ $ sudo apt-get install nodejs
 $ rm nodesource_setup.sh
 ```
 
-Install pm2:
+Clone this repo:
 
 ```
-$ npm install pm2 -g 
+$ git clone https://github.com/kylemcdonald/wesee.git
+```
+
+Run the app:
+
+```
+$ cd wesee
+$ npm install
+$ node -r dotenv/config app.js
 ```
