@@ -230,7 +230,9 @@ function regularCheck() {
 	}, function(data) {
 		// console.log(new Date() + ' Success:');
 		// console.log(data);
-		var total = _.sum(data.map(add));
+		var results = data.map(add);
+		results.push(0); // forces _.sum to return a number
+		var total = _.sum(results);
 		console.log('Added ' + total + '/' + data.length + ' urls.')
 	}, function(err) {
 		console.log(new Date() + ' Error:');
