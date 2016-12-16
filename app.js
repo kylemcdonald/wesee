@@ -87,6 +87,7 @@ Client.Session.create(device, storage, process.env.USERNAME, process.env.PASSWOR
 	.then(function(s) {
 		session = s;
 		console.log('Logged in to Instagram with username ' + process.env.USERNAME);
+		regularCheck();
 	})
 
 // routes
@@ -111,22 +112,23 @@ app.use(function (req, res, next) {
 })
 
 function getTaggedMedia(query, cb, err) {
+	if(typeof(query.limit) === 'undefined' || !query.limit) {
+		query.limit = 0;
+	}
 	try {
 		var feed = new Client.Feed.TaggedMedia(session, query.tag);
 		var page = feed.get();
 		page.then(function(media) {
-			query.limit = Math.min(query.limit, media.length);
+			query.limit = Math.min(query.limit, media.length) || media.length;
 			var compiled = _.map(_.range(0, query.limit), function(i) {
 				var cur = media[i];
 				var params = cur._params;
 				var account = cur.account._params;
+				var url = params.images[0].url;
+				url = url.replace(/\?.*/, ''); // remove ig_cache_key
 				return {
-					'code': params.code,
-					'takenAt': params.takenAt,
-					'caption': params.caption,
-					'url': params.images[0].url,
-					'fullName': account.fullName,
-					'username': account.username
+					'timestamp': params.takenAt,
+					'url': url
 				};
 			});
 			cb(compiled);
@@ -184,20 +186,13 @@ function add(img) {
 		return;
 	}
 
-	// need to check if the url is already present
-	var dup;
-	if(dup = _.findLast(precaption, {'url': img.url})) {
-		var timeSinceDup = img.timestamp - dup.timestamp;
-		if(timeSinceDup < process.env.MAX_TIME_SINCE_DUP) {
-			console.log('Ignoring duplicate ' + timeSinceDup + 'ms ago.');
-		} else {
-			console.log('Using caption from duplicate ' + timeSinceDup + 'ms ago.');	
-			img.text = dup.text;
-			// add duplicate to the current state, but don't save to the log
-			postcaption.push(img);
-		}
-		return;
+	if(_.findLast(precaption, {'url': img.url})) {
+		// ignore duplicates
+		// console.log('duplicate ' + img.url);
+		return false;
 	}
+
+	// console.log('adding ' + img.url);
 	precaption.push(img);
 	
 	getDescription(img.url, (description) => {
@@ -208,6 +203,8 @@ function add(img) {
 	}, (err) => {
 		console.log('Error: ' + err);
 	});
+
+	return true;
 }
 
 app.get('/add', (req, res) => {
@@ -228,22 +225,22 @@ app.get('/add', (req, res) => {
 function regularCheck() {
 	console.log(new Date() + ' Checking Instagram.');
 	getTaggedMedia({
-		tag: 'nofilter',
-		limit: 1
+		tag: process.env.HASHTAG,
+		limit: process.env.LIMIT
 	}, function(data) {
-		console.log(new Date() + ' Success:');
-		console.log(data);
+		// console.log(new Date() + ' Success:');
+		// console.log(data);
+		var total = _.sum(data.map(add));
+		console.log('Added ' + total + '/' + data.length + ' urls.')
 	}, function(err) {
 		console.log(new Date() + ' Error:');
 		console.log(err);
 	})
-	setTimeout(regularCheck, 60*1000);
+	setTimeout(regularCheck, process.env.REFRESH_RATE * 1000);
 }
 
 var server = app.listen(process.env.PORT || 3000, function () {
 	var host = server.address().address;
 	var port = server.address().port;
 	console.log('Example app listening at http://%s:%s', host, port);
-
-	regularCheck();
 });

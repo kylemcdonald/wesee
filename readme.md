@@ -2,6 +2,12 @@
 
 "We See" by Man Bartlett, for [Person of the Crowd](http://www.barnesfoundation.org/exhibitions/upcoming/person-of-the-crowd) at The Barnes Foundation.
 
+## Todo
+
+- Implement design for text.
+- Move to a daemonized setup and start on server restart?
+- Better whitelist situation?
+
 ## Server setup
 
 First, create a VPS and ssh into it.
