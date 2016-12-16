@@ -110,6 +110,36 @@ app.use(function (req, res, next) {
 	}
 })
 
+function getTaggedMedia(query, cb, err) {
+	try {
+		var feed = new Client.Feed.TaggedMedia(session, query.tag);
+		var page = feed.get();
+		page.then(function(media) {
+			query.limit = Math.min(query.limit, media.length);
+			var compiled = _.map(_.range(0, query.limit), function(i) {
+				var cur = media[i];
+				var params = cur._params;
+				var account = cur.account._params;
+				return {
+					'code': params.code,
+					'takenAt': params.takenAt,
+					'caption': params.caption,
+					'url': params.images[0].url,
+					'fullName': account.fullName,
+					'username': account.username
+				};
+			});
+			cb(compiled);
+		});
+	} catch (e) {
+		if(typeof(err) !== 'undefined') {
+			err(e);
+		} else {
+			console.error('Error in getTaggedMedia: ' + e);
+		}
+	}
+}
+
 app.get('/search', function (req, res) {
 	var query = req.query;
 	if(typeof(query.tag) === undefined) {
@@ -119,24 +149,8 @@ app.get('/search', function (req, res) {
 	if(typeof(query.limit) === undefined) {
 		query.limit = 10;
 	}
-	var feed = new Client.Feed.TaggedMedia(session, query.tag);
-	var page = feed.get();
-	page.then(function(media) {
-		query.limit = Math.min(query.limit, media.length);
-		var compiled = _.map(_.range(0, query.limit), function(i) {
-			var cur = media[i];
-			var params = cur._params;
-			var account = cur.account._params;
-			return {
-				'code': params.code,
-				'takenAt': params.takenAt,
-				'caption': params.caption,
-				'url': params.images[0].url,
-				'fullName': account.fullName,
-				'username': account.username
-			};
-		});
-		res.send(compiled);
+	getTaggedMedia(query, function(data) {
+		res.send(data);
 	});
 });
 
@@ -211,8 +225,25 @@ app.get('/add', (req, res) => {
 	add(img);
 });
 
+function regularCheck() {
+	console.log('Checking Instagram.');
+	getTaggedMedia({
+		tag: 'nofilter',
+		limit: 1
+	}, function(data) {
+		console.log('Success:');
+		console.log(data);
+	}, function(err) {
+		console.log('Error:');
+		console.log(err);
+	})
+	setTimeout(regularCheck, 60*1000);
+}
+
 var server = app.listen(process.env.PORT || 3000, function () {
 	var host = server.address().address;
 	var port = server.address().port;
 	console.log('Example app listening at http://%s:%s', host, port);
+
+	regularCheck();
 });
