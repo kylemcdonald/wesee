@@ -35,48 +35,6 @@ rawdb.split(/\r?\n/).forEach((line) => {
 })
 console.log('Loaded ' + postcaption.length + ' records.');
 
-function getDescription(url, cb, err) {
-	var postData = JSON.stringify({
-	 	'url' : url
-	});
-
-	var options = {
-		hostname: 'api.projectoxford.ai',
-		port: 80,
-		path: '/vision/v1.0/describe',
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Ocp-Apim-Subscription-Key': process.env.OCP_API_KEY
-		}
-	};
-
-	var req = http.request(options, (res) => {
-		if(res.statusCode == 200) {
-			res.setEncoding('utf8');
-			res.on('data', (chunk) => {
-				var data = JSON.parse(chunk);
-				console.log(data);
-				var caption = data.description.captions[0].text;
-				if(typeof caption !== "undefined") {
-					cb(caption);
-				} else {
-					console.log("Caption is undefined.");
-				}
-			});
-		} else {
-			err(res.statusCode);
-		}
-	});
-
-	req.on('error', (e) => {
-		err(e.message);
-	});
-
-	req.write(postData);
-	req.end();
-}
-
 // create instagram private api connection
 var Promise = require('bluebird');
 var Client = require('instagram-private-api').V1;
@@ -90,16 +48,26 @@ Client.Session.create(device, storage, process.env.USERNAME, process.env.PASSWOR
 		regularCheck();
 	})
 
-// routes
-app.use(requestIp.mw());
-app.get('/', (req, res, next) => {
-	if(whitelist.indexOf(req.clientIp) != -1) {
-		next();
-	} else {
-		res.status(403).end('Forbidden: ' + req.clientIp);
-	}
-});
+function regularCheck() {
+	console.log(new Date() + ' Checking Instagram.');
+	getTaggedMedia({
+		tag: process.env.HASHTAG,
+		limit: process.env.LIMIT
+	}, function(data) {
+		// console.log(new Date() + ' Success:');
+		// console.log(data);
+		var results = data.map(add);
+		results.push(0); // forces _.sum to return a number
+		var total = _.sum(results);
+		console.log('Added ' + total + '/' + data.length + ' urls.')
+	}, function(err) {
+		console.log(new Date() + ' Error:');
+		console.log(err);
+	})
+	setTimeout(regularCheck, process.env.REFRESH_RATE * 1000);
+}
 
+// routes
 app.use('/', express.static('public'));
 
 // send an error if the instagram session is unavailable
@@ -110,6 +78,34 @@ app.use(function (req, res, next) {
 		next();
 	}
 })
+
+app.get('/all.json', (req, res) => {
+	res.setHeader('Content-Type', 'application/json');
+	res.json(postcaption);
+});
+
+app.get('/recent.json', (req, res) => {
+	var limit = req.query.limit || 10;
+
+	res.setHeader('Content-Type', 'application/json');
+	if(postcaption.length < 1) {
+		res.json({});
+		return;
+	}
+	var sorted = _.sortBy(postcaption, 'timestamp');
+	var last = sorted.slice(-limit); // send 10 most recent
+	res.json(last);
+});
+
+// private routes
+app.use(requestIp.mw());
+app.get(/search|add/, (req, res, next) => {
+	if(whitelist.indexOf(req.clientIp) != -1) {
+		next();
+	} else {
+		res.status(403).end('Forbidden: ' + req.clientIp);
+	}
+});
 
 function getTaggedMedia(query, cb, err) {
 	if(typeof(query.limit) === 'undefined' || !query.limit) {
@@ -156,23 +152,47 @@ app.get('/search', function (req, res) {
 	});
 });
 
-app.get('/all.json', (req, res) => {
-	res.setHeader('Content-Type', 'application/json');
-	res.json(postcaption);
-});
+function getDescription(url, cb, err) {
+	var postData = JSON.stringify({
+	 	'url' : url
+	});
 
-app.get('/recent.json', (req, res) => {
-	var limit = req.query.limit || 10;
+	var options = {
+		hostname: 'api.projectoxford.ai',
+		port: 80,
+		path: '/vision/v1.0/describe',
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Ocp-Apim-Subscription-Key': process.env.OCP_API_KEY
+		}
+	};
 
-	res.setHeader('Content-Type', 'application/json');
-	if(postcaption.length < 1) {
-		res.json({});
-		return;
-	}
-	var sorted = _.sortBy(postcaption, 'timestamp');
-	var last = sorted.slice(-limit); // send 10 most recent
-	res.json(last);
-});
+	var req = http.request(options, (res) => {
+		if(res.statusCode == 200) {
+			res.setEncoding('utf8');
+			res.on('data', (chunk) => {
+				var data = JSON.parse(chunk);
+				console.log(data);
+				var caption = data.description.captions[0].text;
+				if(typeof caption !== "undefined") {
+					cb(caption);
+				} else {
+					console.log("Caption is undefined.");
+				}
+			});
+		} else {
+			err(res.statusCode);
+		}
+	});
+
+	req.on('error', (e) => {
+		err(e.message);
+	});
+
+	req.write(postData);
+	req.end();
+}
 
 function add(img) {
 	if(typeof(img.url) === 'undefined') {
@@ -221,25 +241,6 @@ app.get('/add', (req, res) => {
 
 	add(img);
 });
-
-function regularCheck() {
-	console.log(new Date() + ' Checking Instagram.');
-	getTaggedMedia({
-		tag: process.env.HASHTAG,
-		limit: process.env.LIMIT
-	}, function(data) {
-		// console.log(new Date() + ' Success:');
-		// console.log(data);
-		var results = data.map(add);
-		results.push(0); // forces _.sum to return a number
-		var total = _.sum(results);
-		console.log('Added ' + total + '/' + data.length + ' urls.')
-	}, function(err) {
-		console.log(new Date() + ' Error:');
-		console.log(err);
-	})
-	setTimeout(regularCheck, process.env.REFRESH_RATE * 1000);
-}
 
 var server = app.listen(process.env.PORT || 3000, function () {
 	var host = server.address().address;

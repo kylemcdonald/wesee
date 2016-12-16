@@ -5,8 +5,7 @@
 ## Todo
 
 - Implement design for text.
-- Move to a daemonized setup and start on server restart?
-- Better whitelist situation?
+- Move to a daemonized setup and start on server restart.
 
 ## Server setup
 

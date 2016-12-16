@@ -70,10 +70,10 @@ var Speech = (function() {
 	}
 })();
 
-function whisper(text, cb) {
+function say(text, cb) {
 	Speech.speak({
 		text: text,
-		voice: "Whisper",
+		// voice: "Whisper",
 		onend: cb
 	})
 }

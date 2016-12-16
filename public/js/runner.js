@@ -1,7 +1,6 @@
 var startupDelay = 1000;
 
-var minLoopDelay = 250;
-var maxLoopDelay = 1500;
+var loopDelay = 1000;
 var wordDelay = 85;
 var characterDelay = 50;
 
@@ -57,11 +56,10 @@ function step() {
 	oldImages = limit(oldImages, maxOldImages);
 
 	$('#img-container').css('background-image', 'url(' + cur.url + ')');
-    var text = 'I see ' + cur.text + '.';
+    var text = cur.text;
 	animateText('#cur-text', text);
-	whisper(text, () => {
+	say(text, () => {
 		// succesfully spoke text, go to next loop
-	    var loopDelay = _.random(minLoopDelay, maxLoopDelay);
 		setTimeout(loop, loopDelay);
 	});
 }

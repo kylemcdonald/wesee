@@ -50,13 +50,6 @@ $(function () {
 <body>
 <h1>We See Debug</h1>
 
-<h2>Channels</h2>
-<ul id="channels"></ul>
-
-<h2>Hosts</h2>
-<ol id="hosts"></ol>
-
-<h2>Images</h2>
 <div id="images"></div>
 <div onclick="loadMore()" id="more">Click or press space to load more.</div>
 
@@ -72,9 +65,8 @@ function loadMore() {
 		var timestamp = new Date(img.timestamp).toISOString();
 		$('#images').append(
 			'<a href="' + img.url + '"><div class="image">' +
-				'<span class="hostname">' + img.hostname + '</span>' +
-				'<span class="frequency">' + img.channel + ' MHz</span>' +
 				'<time class="timeago" datetime="' + timestamp + '"></time>' + 
+				'<span class="caption">' + img.text + '</span>' +
 				'<img src="' + img.url + '"/>' +
 			'</div></a>');
 	});
@@ -85,29 +77,11 @@ function loadMore() {
 $.getJSON('../all.json', data => {
 	all = data;
 
-	// get hostnames
-	all.forEach(img => {
-		img.hostname = new URL(img.url).hostname;
-	})
-
 	// sort by recent at top
 	all = _.orderBy(all, ['timestamp'], ['desc']);
 
-	// log channels
-	channelCounts = _.countBy(all, 'channel');
-	for(channel in channelCounts) {
-		$('#channels').append('<li>' + channel + ' MHz: ' + channelCounts[channel] + '</li>');
-	};
-
 	// log images
 	loadMore();
-
-	// log hostnames
-	var hostnameCounts = _.toPairs(_(all).countBy('hostname').value());
-	hostnameCounts = _.orderBy(hostnameCounts, 1, 'desc');
-	hostnameCounts.slice(0, 10).forEach(item => {
-		$('#hosts').append('<li><a href="http://' + item[0] + '">' + item[0] + '</a> (' + item[1] + ')</li>');
-	});
 })
 </script>
 
