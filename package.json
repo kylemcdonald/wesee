@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon --ignore cookies app.js"
+    "start": "nodemon --ignore cookies -r dotenv/config app.js"
   },
   "repository": "https://github.com/kylemcdonald/wesee",
   "author": "Kyle McDonald",
