@@ -36,6 +36,7 @@ app.get('/latest', function (req, res) {
     var feed = new Client.Feed.TaggedMedia(session, query.tag);
     var page = feed.get();
     page.then(function(media) {
+        query.limit = Math.min(query.limit, media.length);
         var compiled = _.map(_.range(0, query.limit), function(i) {
             var cur = media[i];
             var params = cur._params;
