@@ -226,15 +226,15 @@ app.get('/add', (req, res) => {
 });
 
 function regularCheck() {
-	console.log('Checking Instagram.');
+	console.log(new Date() + ' Checking Instagram.');
 	getTaggedMedia({
 		tag: 'nofilter',
 		limit: 1
 	}, function(data) {
-		console.log('Success:');
+		console.log(new Date() + ' Success:');
 		console.log(data);
 	}, function(err) {
-		console.log('Error:');
+		console.log(new Date() + ' Error:');
 		console.log(err);
 	})
 	setTimeout(regularCheck, 60*1000);
