@@ -55,7 +55,6 @@ function step() {
 	newImages = limit(newImages, maxNewImages);
 	oldImages = limit(oldImages, maxOldImages);
 
-	$('#img-container').css('background-image', 'url(' + cur.url + ')');
     var text = cur.text;
 	animateText('#cur-text', text);
 	say(text, () => {
@@ -95,3 +94,7 @@ setTimeout(function () {
 		loop();
 	}
 }, startupDelay);
+
+$(document).click(function() {
+    quiet = !quiet;
+});

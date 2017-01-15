@@ -37,6 +37,7 @@ var Speech = (function() {
 				}
 			});
 			msg.onend = endOnce;
+			msg.volume = typeof(settings.volume) === 'undefined' ? 1 : settings.volume;
 			var speakOnce = once(function() {
 				// console.log('speak');
 				// wait to assign the voice until it's ready
@@ -70,10 +71,14 @@ var Speech = (function() {
 	}
 })();
 
+var quiet = window.location.search.indexOf("quiet") > -1;
+
 function say(text, cb) {
 	Speech.speak({
 		text: text,
 		// voice: "Whisper",
+		volume: quiet ? 0 : 1,
+		maxLength: 5000,
 		onend: cb
 	})
 }

@@ -13,12 +13,20 @@
 <script src="js/tts.js"></script>
 <script src="js/runner.js"></script>
 <style>
-body {
-    background: black;
+html, body {
+    height:100%;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden; 
+    overflow-y: auto;
+    cursor: pointer;
 }
-#img-container {
-    /*image-rendering: pixelated;*/
-    background-size: cover;
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 .fullscreen {
     position: fixed;
@@ -27,25 +35,48 @@ body {
     width: 100%;
     height: 100%;
 }
-#footer {
+.flex-container {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
     position: fixed;
+    top: 0;
+    right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0,0,0,.75);
-    padding: 2vh;
-    padding-bottom: 1vh;
-    display: inline-block;
-    width: 100%;
-    color: white;
-    font-size: 6vh;
+}
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#cur-text {
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: -.01em;
+    font-size: 15vmin;
     line-height: 1em;
+    max-width: 85%;
 }
 </style>
 </head>
 
 <body class="noselect fullscreen">
-    <div id="img-container" class="fullscreen"></div>
-    <div id="footer"><p id="cur-text"></p></div>
+    <div class="flex-container">
+        <p id="cur-text"></p>
+    </div>
 </body>
 </html>
 
