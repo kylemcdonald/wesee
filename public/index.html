@@ -66,10 +66,17 @@ html, body {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: -.01em;
-    font-size: 45vmin;
+    font-size: 12vmin;
     line-height: .9em;
     max-width: 95%;
 }
+
+@media screen and (min-aspect-ratio: 10/10) { #cur-text { font-size: 15vmin } }
+@media screen and (min-aspect-ratio: 20/10) { #cur-text { font-size: 20vmin } }
+@media screen and (min-aspect-ratio: 32/10) { #cur-text { font-size: 25vmin } }
+@media screen and (min-aspect-ratio: 58/10) { #cur-text { font-size: 35vmin } }
+@media screen and (min-aspect-ratio: 95/10) { #cur-text { font-size: 45vmin } }
+
 </style>
 </head>
 
