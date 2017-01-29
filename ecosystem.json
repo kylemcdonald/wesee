@@ -1,0 +1,8 @@
+{
+  "apps" : [{
+    "name": "wesee",
+    "cwd": "/root/wesee",
+    "script": "app.js",
+    "node_args": "-r dotenv/config"
+  }]
+}
