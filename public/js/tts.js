@@ -39,7 +39,7 @@ var Speech = (function() {
 	var defaultMaxLength = 5000;
 	var clickLoopTimeout = 100;
 
-	function speakImplementation(settings) {			
+	function speakImplementation(settings) {
 		if(settings.text == undefined) {
 			return;
 		}
@@ -115,13 +115,6 @@ var Speech = (function() {
 
 	module.cancel = function () {
 		speechSynthesis.cancel();
-	}
-
-	function emptySpeech() {
-		voices = speechSynthesis.getVoices();
-		var msg = new SpeechSynthesisUtterance('hello world');
-		msg.voice = getDefaultVoice(voices);
-		speechSynthesis.speak(msg);
 	}
 
 	if (!onMobile) {
