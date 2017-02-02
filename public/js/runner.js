@@ -12,7 +12,7 @@ var running = false;
 var oldImages = [];
 var newImages = [];
 
-$.getJSON('all.json?limit=' + maxOldImages, (data) => {
+$.getJSON('all.json?limit=' + maxOldImages, function(data) {
 	oldImages = oldImages.concat(data);
 })
 
@@ -24,7 +24,7 @@ function animateText(element, text) {
 	tokens.forEach(function (token) {
 		setTimeout(function () {
 			complete += token + ' ';
-			$('#cur-text').text(complete);		
+			$('#cur-text').text(complete);
 		}, length+0);
 		length += wordDelay + characterDelay * token.length;
 	})
@@ -57,18 +57,18 @@ function step() {
 
     var text = cur.text;
 	animateText('#cur-text', text);
-	say(text, () => {
+	say(text, function () {
 		// succesfully spoke text, go to next loop
 		setTimeout(loop, loopDelay);
 	});
 }
 
 function loop() {
-	$.getJSON('recent.json', (data) => {
+	$.getJSON('recent.json', function (data) {
 		data = _.sortBy(data, 'timestamp');
 
 		var allImages = oldImages.concat(newImages);
-		data.forEach((cur) => {
+		data.forEach(function (cur) {
 			if(!_.find(allImages, {'url': cur.url, 'timestamp': cur.timestamp})) {
 				// console.log('Adding to newImages: ' + cur.url + ' at ' + cur.timestamp);
 				newImages.push(cur);
@@ -81,7 +81,7 @@ function loop() {
 			// not running right now, go to next loop
 	        setTimeout(loop, minLoopDelay);
 	    }
-	}).fail(() => {
+	}).fail(function () {
 		// error getting data, do a step anyway
 		step();
 	});
@@ -96,5 +96,5 @@ setTimeout(function () {
 }, startupDelay);
 
 $(document).click(function() {
-    quiet = !quiet;
+    Speech.quiet = !(Speech.quiet);
 });
