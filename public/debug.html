@@ -30,7 +30,7 @@ body {
 	float:left;
 	text-align:center;
 	width:100%;
-	padding:1em;
+	padding:1em 0;
 	font-size: 2em;
 }
 </style>
@@ -38,31 +38,20 @@ body {
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.5.3/jquery.timeago.min.js"></script>
 <script>
-$(function () {  
-	$(document).keypress(function (e) {
-	  if(e.key == ' ') {
-	  	loadMore();
-	  }
-	});
-});
-</script>
-</head>
-<body>
-<h1>We See Debug</h1>
-
-<div id="images"></div>
-<div onclick="loadMore()" id="more">Click or press space to load more.</div>
-
-<script>
 var all;
 var imageStart = 0;
-var loadIncrement = 200;
+var loadIncrement = 10;
+
+var loadMoreMessage = "Click or press space to load more.";
+var loadingInProgressMessage = "Loading more...";
 
 function loadMore() {
+	$('#more').text(loadingInProgressMessage);
 	var start = imageStart;
 	var end = start + loadIncrement;
 	all.slice(start, end).forEach(img => {
 		var timestamp = new Date(img.timestamp).toISOString();
+		img.url = img.url.replace('http:', 'https:');
 		$('#images').append(
 			'<a href="' + img.url + '"><div class="image">' +
 				'<time class="timeago" datetime="' + timestamp + '"></time>' + 
@@ -72,18 +61,45 @@ function loadMore() {
 	});
 	$('time.timeago').timeago();
 	imageStart = end;
+	$('#more').text(loadMoreMessage);
 }
 
-$.getJSON('../all.json', data => {
-	all = data;
+$(function () {  
+	$('#more').text(loadMoreMessage);
 
-	// sort by recent at top
-	all = _.orderBy(all, ['timestamp'], ['desc']);
+	$(document).keypress(function (e) {
+		if(e.key == ' ') {
+			loadMore();
+		}
+	});
 
-	// log images
-	loadMore();
-})
+	$(document).scroll(function (e) {
+		var loadScrollDistance = 10; // pixels
+		var distanceToBottom = document.documentElement.clientHeight - window.pageYOffset - window.innerHeight;
+		if(distanceToBottom < loadScrollDistance) {
+			loadMore();
+		}
+	})
+
+	$.getJSON('../all.json', data => {
+		all = data;
+
+		$('#total').text(all.length);
+
+		// sort by recent at top
+		all = _.orderBy(all, ['timestamp'], ['desc']);
+
+		// log images
+		loadMore();
+	})
+});
 </script>
+</head>
+<body>
+<h1>Total: <span id="total">...</span></h1>
+
+<div id="images"></div>
+<div onclick="loadMore()" id="more"></div>
 
 </body>
 </html>
