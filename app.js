@@ -158,7 +158,7 @@ function getDescription(url, cb, err) {
 	});
 
 	var options = {
-		hostname: 'api.projectoxford.ai',
+		hostname: process.env.OCP_HOSTNAME,
 		port: 80,
 		path: '/vision/v1.0/describe',
 		method: 'POST',
